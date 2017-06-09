@@ -69,8 +69,8 @@ func (p *program) Start() error {
 	}
 	for serverName, server := range cfg.Redis {
 		fmt.Printf("Server: %s (%s)\n", serverName, server.Address)
-		os.Exit(0)
 	}
+	os.Exit(0)
 	return nil
 }
 
