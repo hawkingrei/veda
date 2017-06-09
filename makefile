@@ -3,7 +3,7 @@ GITTAG=`git rev-parse --short HEAD`
 BUILD_TIME=`date -u +%Y.%m.%d-%H:%M:%S%Z`
 VERSION=0.0.1
 GOPATH ?= $(shell go env GOPATH)
-GOFLAGS=-ldflags "-X "github.com/hawkingrei/veda/internal/version".GitCommit=${GITTAG} -X "github.com/hawkingrei/veda/internal/version".BuildTime=${BUILD_TIME} -X "github.com/hawkingrei/veda/internal/version".Version=${VERSION}"
+GOFLAGS=-ldflags "-l -X "github.com/hawkingrei/veda/internal/version".GitCommit=${GITTAG} -X "github.com/hawkingrei/veda/internal/version".BuildTime=${BUILD_TIME} -X "github.com/hawkingrei/veda/internal/version".Version=${VERSION}"
 
 # Ensure GOPATH is set before running build process.
 ifeq "$(GOPATH)" ""
