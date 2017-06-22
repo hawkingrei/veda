@@ -3,7 +3,7 @@ GITTAG=`git rev-parse --short HEAD`
 BUILD_TIME=`date -u +%Y.%m.%d-%H:%M:%S%Z`
 VERSION=0.0.1
 GOPATH ?= $(shell go env GOPATH)
-GOFLAGS=-ldflags "-l -X "github.com/hawkingrei/veda/internal/version".GitCommit=${GITTAG} -X "github.com/hawkingrei/veda/internal/version".BuildTime=${BUILD_TIME} -X "github.com/hawkingrei/veda/internal/version".Version=${VERSION}"
+GOFLAGS=-ldflags "-X "github.com/hawkingrei/veda/internal/version".GitCommit=${GITTAG} -X "github.com/hawkingrei/veda/internal/version".BuildTime=${BUILD_TIME} -X "github.com/hawkingrei/veda/internal/version".Version=${VERSION}"
 
 # Ensure GOPATH is set before running build process.
 ifeq "$(GOPATH)" ""
@@ -32,7 +32,7 @@ clean:
 	rm -fr $(BLDDIR)
 
 check:
-	go get github.com/golang/lint/golint
+#go get github.com/golang/lint/golint
 
 	@echo "gofmt (simplify)"
 	@gofmt -s -l -w $(FILES) 2>&1 | grep -v "parser/parser.go" | awk '{print} END{if(NR>0) {exit 1}}'

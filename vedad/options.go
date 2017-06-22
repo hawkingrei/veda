@@ -5,22 +5,26 @@ import (
 	//"log"
 )
 
-type Config struct {
-	Redis map[string]Server
-	//Memcache map[string]Server
+type Meta struct {
+	Topics map[string]Channels
 }
 
-type Server struct {
-	Address string
+type Channels map[string]ChannelsMeta
+
+type ChannelsMeta struct {
+	Name     string
+	Address  string
+	Interval int
 }
 
 type Options struct {
-	LogLevel string `flag:"log-level"`
-	Verbose  bool   `flag:"verbose"`
-	Logger   Logger
-	logLevel lg.LogLevel
-	config   Config
+	LogLevel  string `flag:"log-level"`
+	LogPrefix string `flag:"log-prefix"`
+	Verbose   bool   `flag:"verbose"`
+	Logger    Logger
+	logLevel  lg.LogLevel
 
+	Timeout      int
 	WorkSize     int
 	SendWorkSize int
 }
@@ -28,5 +32,6 @@ type Options struct {
 func NewOptions() *Options {
 	return &Options{
 		LogLevel: "debug",
+		Timeout:  1,
 	}
 }

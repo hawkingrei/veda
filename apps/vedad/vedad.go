@@ -14,15 +14,6 @@ import (
 	"github.com/judwhite/go-svc/svc"
 )
 
-type config struct {
-	Redis    map[string]server
-	Memcache map[string]server
-}
-
-type server struct {
-	Address string
-}
-
 type program struct {
 	vedad *vedad.VEDAD
 }
@@ -49,6 +40,16 @@ func (p *program) Init(env svc.Environment) error {
 	return nil
 }
 
+func loadmeta(configFile string) (meta vedad.Meta, err error) {
+	if configFile != "" {
+		_, err = toml.DecodeFile(configFile, &meta)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
+
 func (p *program) Start() error {
 	opts := vedad.NewOptions()
 	flagSet := vedadFlagSet(opts)
@@ -59,18 +60,20 @@ func (p *program) Start() error {
 		os.Exit(0)
 	}
 
-	var cfg vedad.Config
+	vedad := vedad.New(opts)
 	configFile := flagSet.Lookup("config").Value.String()
-	if configFile != "" {
-		_, err := toml.DecodeFile(configFile, &cfg)
-		if err != nil {
-			log.Fatalf("ERROR: failed to load config file %s - %s", configFile, err.Error())
-		}
+	meta, err := loadmeta(configFile)
+	if err != nil {
+		log.Fatalf("ERROR: failed to load config file %s - %s", configFile, err.Error())
 	}
-	for serverName, server := range cfg.Redis {
-		fmt.Printf("Server: %s (%s)\n", serverName, server.Address)
+
+	err = vedad.Loadmeta(meta)
+	if err != nil {
+		log.Fatalf("ERROR: %s", err.Error())
 	}
-	os.Exit(0)
+	vedad.Main()
+	p.vedad = vedad
+
 	return nil
 }
 

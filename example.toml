@@ -1,18 +1,21 @@
 # This is a TOML document. Boom.
 
 
-[memcache]
 
   # You can indent as you please. Tabs or spaces. TOML don't care.
-  [memcache.std-1]
-  address = "10.1.1.96:11211"
+[topics]
+	[topics.memcache.std-1]
+	address  = "10.1.1.96:11211"
+	interval = 3
 
-  [memcache.std-2]
-  address = "10.1.1.95:11211"
+	[topics.memcache.std-2]
+	address = "10.1.1.95:11211"
+	interval = 3
 
-[redis]
-  [redis.session-75-0]
-  address = "10.1.1.75:6380"
-
-  [redis.session-75-1]
-  address = "10.1.1.75:6381"
+	[topics.redis.session-75-0]
+	address = "10.1.1.75:6380"
+	interval = 3
+  
+	[topics.redis.session-75-1]
+	address = "10.1.1.75:6381"
+	interval = 3
