@@ -2,19 +2,22 @@ package vedad
 
 import (
 	"errors"
-	goutil "github.com/hawkingrei/golang_util"
 	"log"
 	"os"
 	"sync"
 	"sync/atomic"
+
+	goutil "github.com/hawkingrei/golang_util"
+	"github.com/hawkingrei/veda/collectors"
 )
 
 type VEDAD struct {
 	sync.RWMutex
-	opts      atomic.Value
-	waitGroup goutil.WaitGroupWrapper
-	exitChan  chan int
-	topicMap  map[string]*Topic
+	opts           atomic.Value
+	waitGroup      goutil.WaitGroupWrapper
+	exitChan       chan int
+	pushinfluxChan chan collectors.CollectData
+	topicMap       map[string]*Topic
 }
 
 func New(opts *Options) *VEDAD {
@@ -22,8 +25,9 @@ func New(opts *Options) *VEDAD {
 		opts.Logger = log.New(os.Stderr, opts.LogPrefix, log.Ldate|log.Ltime|log.Lmicroseconds)
 	}
 	v := &VEDAD{
-		topicMap: make(map[string]*Topic),
-		exitChan: make(chan int),
+		topicMap:       make(map[string]*Topic),
+		exitChan:       make(chan int),
+		pushinfluxChan: make(chan collectors.CollectData, 1000000000000),
 	}
 	v.swapOpts(opts)
 	return v

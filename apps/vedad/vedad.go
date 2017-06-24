@@ -66,6 +66,16 @@ func (p *program) Start() error {
 	if err != nil {
 		log.Fatalf("ERROR: failed to load config file %s - %s", configFile, err.Error())
 	}
+	//for k,v := range meta.Topics {
+	//	fmt.Println("--")
+	//	fmt.Println(k)
+	//	for kk,vv := range v {
+	//		fmt.Println("-")
+	//		fmt.Println(kk)
+	//		fmt.Println(vv.Address)
+	//		fmt.Println(vv.Interval)
+	//	}
+	//}
 
 	err = vedad.Loadmeta(meta)
 	if err != nil {

@@ -1,10 +1,11 @@
 package vedad
 
 import (
-	goutil "github.com/hawkingrei/golang_util"
-	"github.com/hawkingrei/veda/collectors"
 	"sync"
 	"time"
+
+	goutil "github.com/hawkingrei/golang_util"
+	"github.com/hawkingrei/veda/collectors"
 )
 
 type Consumer interface {
@@ -40,12 +41,16 @@ func NewChannel(topicName string, channelName string, channelsMeta ChannelsMeta,
 
 func (c *Channel) StartChannel() {
 	var mc collectors.Collectd
-	ticker := time.NewTicker(3 * time.Second)
-	mc, _ = collectors.GetMemcacheConn("10.1.1.96:11211")
+	var tags map[string]string
+	tags["name"] = c.meta.Name
+	ticker := time.NewTicker(time.Duration(c.meta.Interval) * time.Second)
+	mc, _ = collectors.GetMemcacheConn(c.meta.Address, tags)
 	for {
 		select {
 		case <-ticker.C:
-			mc.Start()
+			c.ctx.vedad.pushinfluxChan <- mc.Start()
+		case <-c.exitChan:
+			return
 		}
 	}
 }

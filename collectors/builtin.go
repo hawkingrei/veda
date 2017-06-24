@@ -1,8 +1,14 @@
 package collectors
 
+import (
+	"time"
+)
+
 type CollectData struct {
-	Label string
-	Data  map[string]float64
+	Name string
+	Tags map[string]string
+	Data map[string]float64
+	T    time.Time
 }
 
 type Collectd interface {
