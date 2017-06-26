@@ -7,10 +7,10 @@ import (
 type CollectData struct {
 	Name string
 	Tags map[string]string
-	Data map[string]float64
+	Data map[string]interface{}
 	T    time.Time
 }
 
 type Collectd interface {
-	Start() CollectData
+	Start() (CollectData, error)
 }

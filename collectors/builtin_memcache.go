@@ -19,7 +19,10 @@ type MemcacheConnection struct {
 
 var _ Collectd = &MemcacheConnection{}
 
-func GetMemcacheConn(address string, tags map[string]string) (conn *MemcacheConnection, err error) {
+func GetMemcacheConn(address string, name string) (conn *MemcacheConnection, err error) {
+	var tag map[string]string
+	tag = make(map[string]string)
+	tag["name"] = name
 	nc, err := net.DialTimeout("tcp", address, 2*time.Second)
 	if err != nil {
 		return conn, err
@@ -31,6 +34,7 @@ func GetMemcacheConn(address string, tags map[string]string) (conn *MemcacheConn
 			Writer: bufio.NewWriter(nc),
 		},
 		Name: "memcache",
+		tag:  tag,
 	}, err
 }
 
@@ -68,7 +72,7 @@ func (mc *MemcacheConnection) stats() (result []byte, err error) {
 
 func (mc *MemcacheConnection) convertCollectData(data []byte) (cd CollectData) {
 	cd.T = time.Now()
-	cd.Data = make(map[string]float64)
+	cd.Data = make(map[string]interface{})
 
 	resultStr := strings.Split(string(data), "\n")
 	for _, result := range resultStr {
@@ -78,13 +82,16 @@ func (mc *MemcacheConnection) convertCollectData(data []byte) (cd CollectData) {
 		item := strings.Split(result, " ")
 		itemValue, _ := strconv.ParseFloat(item[2], 64)
 		cd.Data[item[1]] = itemValue
+		//fmt.Println(cd.Data)
 	}
-
 	return
 }
 
 // Start a Memcache Connection.
-func (mc *MemcacheConnection) Start() CollectData {
-	result, _ := mc.stats()
-	return mc.convertCollectData(result)
+func (mc *MemcacheConnection) Start() (data CollectData, err error) {
+	result, err := mc.stats()
+	if err != nil {
+		return data, err
+	}
+	return mc.convertCollectData(result), err
 }

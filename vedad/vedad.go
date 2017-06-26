@@ -7,8 +7,11 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"fmt"
+
 	goutil "github.com/hawkingrei/golang_util"
 	"github.com/hawkingrei/veda/collectors"
+	"github.com/influxdata/influxdb/client/v2"
 )
 
 type VEDAD struct {
@@ -16,7 +19,7 @@ type VEDAD struct {
 	opts           atomic.Value
 	waitGroup      goutil.WaitGroupWrapper
 	exitChan       chan int
-	pushinfluxChan chan collectors.CollectData
+	pushinfluxChan chan *collectors.CollectData
 	topicMap       map[string]*Topic
 }
 
@@ -27,7 +30,7 @@ func New(opts *Options) *VEDAD {
 	v := &VEDAD{
 		topicMap:       make(map[string]*Topic),
 		exitChan:       make(chan int),
-		pushinfluxChan: make(chan collectors.CollectData, 1000000000000),
+		pushinfluxChan: make(chan *collectors.CollectData, 100000000),
 	}
 	v.swapOpts(opts)
 	return v
@@ -50,10 +53,7 @@ func (v *VEDAD) Loadmeta(meta Meta) error {
 	return nil
 }
 func (v *VEDAD) Main() {
-
-	//ctx := &context{v}
-
-	//v.waitGroup.Wrap(func() { v.queueScanLoop() })
+	v.waitGroup.Wrap(func() { v.ToInfluxdb() })
 	//v.waitGroup.Wrap(func() { v.lookupLoop() })
 	//if v.getOpts().StatsdAddress != "" {
 	//	v.waitGroup.Wrap(func() { v.statsdLoop() })
@@ -123,5 +123,57 @@ func (v *VEDAD) DeleteExistingTopic(topicName string) error {
 	delete(v.topicMap, topicName)
 	v.Unlock()
 
+	return nil
+}
+
+func (v *VEDAD) ToInfluxdb() {
+	for {
+		select {
+		case c := <-v.pushinfluxChan:
+			fmt.Println(c.Data)
+			err := putdata(*c)
+			if err != nil {
+				//v.pushinfluxChan <- c
+				v.logf(LOG_ERROR, "VEDAD: fail to write data into influxdb : %s", err.Error())
+			}
+		case <-v.exitChan:
+			return
+		}
+	}
+}
+
+func putdata(data collectors.CollectData) error {
+	MyDB := "square_holes"
+	username := ""
+	password := ""
+	c, err := client.NewHTTPClient(client.HTTPConfig{
+		Addr:     "http://10.1.1.89:8086",
+		Username: username,
+		Password: password,
+	})
+	if err != nil {
+		return err
+	}
+
+	// Create a new point batch
+	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
+		Database:  MyDB,
+		Precision: "s",
+	})
+	if err != nil {
+		return err
+	}
+
+	// Create a point and add to batch
+	pt, err := client.NewPoint(data.Name, data.Tags, data.Data, data.T)
+	if err != nil {
+		return err
+	}
+	bp.AddPoint(pt)
+
+	// Write the batch
+	if err := c.Write(bp); err != nil {
+		return err
+	}
 	return nil
 }

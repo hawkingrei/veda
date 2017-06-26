@@ -56,7 +56,7 @@ func (t *Topic) GetChannel(channelName string, channelsMeta ChannelsMeta) *Chann
 		channel = NewChannel(t.name, channelName, channelsMeta, t.ctx)
 		t.channelMap[channelName] = channel
 		t.ctx.vedad.logf(LOG_INFO, "TOPIC(%s): new channel(%s)", t.name, channel.name)
-		t.ctx.vedad.waitGroup(func() {})
+		//t.ctx.vedad.waitGroup(func() {})
 		return channel
 	}
 	return channel

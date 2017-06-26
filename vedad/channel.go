@@ -39,16 +39,27 @@ func NewChannel(topicName string, channelName string, channelsMeta ChannelsMeta,
 	return c
 }
 
+func (c *Channel) getconn() collectors.Collectd {
+	var mc collectors.Collectd
+	switch c.topicName {
+	case "memcache":
+		mc, _ = collectors.GetMemcacheConn(c.meta.Address, c.meta.Name)
+	}
+	return mc
+}
+
 func (c *Channel) StartChannel() {
 	var mc collectors.Collectd
-	var tags map[string]string
-	tags["name"] = c.meta.Name
 	ticker := time.NewTicker(time.Duration(c.meta.Interval) * time.Second)
-	mc, _ = collectors.GetMemcacheConn(c.meta.Address, tags)
+	mc = c.getconn()
 	for {
 		select {
 		case <-ticker.C:
-			c.ctx.vedad.pushinfluxChan <- mc.Start()
+			data, err := mc.Start()
+			if err == nil {
+				c.ctx.vedad.pushinfluxChan <- &data
+			}
+
 		case <-c.exitChan:
 			return
 		}
