@@ -7,8 +7,6 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"fmt"
-
 	goutil "github.com/hawkingrei/golang_util"
 	"github.com/hawkingrei/veda/collectors"
 	"github.com/influxdata/influxdb/client/v2"
@@ -130,7 +128,6 @@ func (v *VEDAD) ToInfluxdb() {
 	for {
 		select {
 		case c := <-v.pushinfluxChan:
-			fmt.Println(c.Data)
 			err := putdata(*c)
 			if err != nil {
 				//v.pushinfluxChan <- c
@@ -158,7 +155,7 @@ func putdata(data collectors.CollectData) error {
 	// Create a new point batch
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  MyDB,
-		Precision: "s",
+		Precision: "us",
 	})
 	if err != nil {
 		return err

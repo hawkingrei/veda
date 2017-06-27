@@ -23,13 +23,14 @@ all: $(APPS)
 $(BLDDIR)/vedad:        $(wildcard apps/vedad/*.go       vedad/*.go       veda/*.go internal/*/*.go)
 
 $(BLDDIR)/%:
+	@rm -fr $(BLDDIR)
 	@mkdir -p $(dir $@)
 	go build ${GOFLAGS} -o $@ ./apps/$*
 
 $(APPS): %: $(BLDDIR)/%
 	
 clean:
-	rm -fr $(BLDDIR)
+	@rm -fr $(BLDDIR)
 
 check:
 #go get github.com/golang/lint/golint

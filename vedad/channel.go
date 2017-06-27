@@ -43,7 +43,7 @@ func (c *Channel) getconn() collectors.Collectd {
 	var mc collectors.Collectd
 	switch c.topicName {
 	case "memcache":
-		mc, _ = collectors.GetMemcacheConn(c.meta.Address, c.meta.Name)
+		mc, _ = collectors.GetMemcacheConn(c.meta.Address, c.name)
 	}
 	return mc
 }

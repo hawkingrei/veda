@@ -3,6 +3,7 @@ package collectors
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"net"
 	"strconv"
 	"strings"
@@ -19,10 +20,53 @@ type MemcacheConnection struct {
 
 var _ Collectd = &MemcacheConnection{}
 
+var (
+	whitelist = []string{
+		"uptime",
+		"time",
+		"pointer_size",
+		"rusage_user",
+		"rusage_user",
+		"rusage_system",
+		"curr_connections",
+		"total_connections",
+		"connection_structures",
+		"cmd_get",
+		"cmd_set",
+		"cmd_flush",
+		"get_hits",
+		"get_misses",
+		"delete_misses",
+		"delete_hits",
+		"incr_misses",
+		"incr_hits",
+		"decr_misses",
+		"decr_hits",
+		"cas_misses",
+		"cas_hits",
+		"cas_badval",
+		"auth_cmds",
+		"auth_errors",
+		"bytes_read",
+		"bytes_written",
+		"limit_maxbytes",
+		"accepting_conns",
+		"listen_disabled_num",
+		"threads",
+		"conn_yields",
+		"bytes",
+		"curr_items",
+		"total_items",
+		"evictions",
+		"reclaimed",
+	}
+)
+
 func GetMemcacheConn(address string, name string) (conn *MemcacheConnection, err error) {
 	var tag map[string]string
 	tag = make(map[string]string)
 	tag["name"] = name
+	fmt.Println(name)
 	nc, err := net.DialTimeout("tcp", address, 2*time.Second)
 	if err != nil {
 		return conn, err
@@ -72,18 +116,28 @@ func (mc *MemcacheConnection) stats() (result []byte, err error) {
 
 func (mc *MemcacheConnection) convertCollectData(data []byte) (cd CollectData) {
 	cd.T = time.Now()
+	cd.Name = mc.Name
+	cd.Tags = mc.tag
 	cd.Data = make(map[string]interface{})
-
 	resultStr := strings.Split(string(data), "\n")
 	for _, result := range resultStr {
 		if result == "" {
 			break
 		}
 		item := strings.Split(result, " ")
-		itemValue, _ := strconv.ParseFloat(item[2], 64)
-		cd.Data[item[1]] = itemValue
-		//fmt.Println(cd.Data)
+		itemValue, err := strconv.ParseFloat(item[2], 64)
+		if err != nil {
+			continue
+		}
+		for _, v := range whitelist {
+			if v == item[1] {
+				// Found!
+				cd.Data[item[1]] = itemValue
+				break
+			}
+		}
 	}
+	//fmt.Println(cd)
 	return
 }
 
