@@ -90,6 +90,7 @@ func (p *program) Start() error {
 func (p *program) Stop() error {
 	if p.vedad != nil {
 		p.vedad.Exit()
+		log.Fatalf("INFO: stop the veda")
 	}
 	return nil
 }

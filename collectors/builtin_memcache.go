@@ -3,7 +3,6 @@ package collectors
 import (
 	"bufio"
 	"errors"
-	"fmt"
 	"net"
 	"strconv"
 	"strings"
@@ -15,13 +14,12 @@ type MemcacheConnection struct {
 	buffered bufio.ReadWriter
 	Name     string
 	tag      map[string]string
-	//writeChan
 }
 
 var _ Collectd = &MemcacheConnection{}
 
 var (
-	whitelist = []string{
+	memcacheWhitelist = []string{
 		"uptime",
 		"time",
 		"pointer_size",
@@ -66,7 +64,6 @@ func GetMemcacheConn(address string, name string) (conn *MemcacheConnection, err
 	var tag map[string]string
 	tag = make(map[string]string)
 	tag["name"] = name
-	fmt.Println(name)
 	nc, err := net.DialTimeout("tcp", address, 2*time.Second)
 	if err != nil {
 		return conn, err
@@ -114,12 +111,12 @@ func (mc *MemcacheConnection) stats() (result []byte, err error) {
 	return result, err
 }
 
-func (mc *MemcacheConnection) convertCollectData(data []byte) (cd CollectData) {
+func (mc *MemcacheConnection) convertCollectData(data string) (cd CollectData) {
 	cd.T = time.Now()
 	cd.Name = mc.Name
 	cd.Tags = mc.tag
 	cd.Data = make(map[string]interface{})
-	resultStr := strings.Split(string(data), "\n")
+	resultStr := strings.Split(data, "\n")
 	for _, result := range resultStr {
 		if result == "" {
 			break
@@ -128,8 +125,9 @@ func (mc *MemcacheConnection) convertCollectData(data []byte) (cd CollectData) {
 		itemValue, err := strconv.ParseFloat(item[2], 64)
 		if err != nil {
 			continue
+			// TODO: add log
 		}
-		for _, v := range whitelist {
+		for _, v := range memcacheWhitelist {
 			if v == item[1] {
 				// Found!
 				cd.Data[item[1]] = itemValue
@@ -147,5 +145,5 @@ func (mc *MemcacheConnection) Start() (data CollectData, err error) {
 	if err != nil {
 		return data, err
 	}
-	return mc.convertCollectData(result), err
+	return mc.convertCollectData(string(result)), err
 }

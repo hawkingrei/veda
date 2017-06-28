@@ -20,7 +20,15 @@ APPS := vedad
 
 all: $(APPS)
 
+linux :
+	$(wildcard apps/vedad/*.go       vedad/*.go       veda/*.go internal/*/*.go)	
+	@rm -fr $(BLDDIR)
+	@mkdir -p $(dir $@)
+	GOOS=linux  GOARCH=amd64 go build ${GOFLAGS} -o $@ ./apps/$*
+
 $(BLDDIR)/vedad:        $(wildcard apps/vedad/*.go       vedad/*.go       veda/*.go internal/*/*.go)
+
+
 
 $(BLDDIR)/%:
 	@rm -fr $(BLDDIR)

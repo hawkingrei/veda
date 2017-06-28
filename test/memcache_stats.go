@@ -53,7 +53,7 @@ func (mc *Connection) flush() {
 }
 
 func (mc *Connection) Stats() (result []byte, err error) {
-	mc.writestring("stats\r\n")
+	mc.writestring("INFO")
 	mc.flush()
 	for {
 		l := mc.readline()

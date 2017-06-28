@@ -1,0 +1,62 @@
+{
+	"ImportPath": "github.com/hawkingrei/veda",
+	"GoVersion": "go1.8",
+	"GodepVersion": "v79",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/BurntSushi/toml",
+			"Comment": "v0.3.0",
+			"Rev": "b26d9c308763d68093482582cea63d69be07a0f0"
+		},
+		{
+			"ImportPath": "github.com/garyburd/redigo/internal",
+			"Comment": "v1.1.0-6-g57f1cd7",
+			"Rev": "57f1cd7de6175c96b423e7ac2534ff2b39e2ef79"
+		},
+		{
+			"ImportPath": "github.com/garyburd/redigo/redis",
+			"Comment": "v1.1.0-6-g57f1cd7",
+			"Rev": "57f1cd7de6175c96b423e7ac2534ff2b39e2ef79"
+		},
+		{
+			"ImportPath": "github.com/hawkingrei/golang_util",
+			"Rev": "ef5c63906f00c06ac574c81f9ed50a59ce01eb22"
+		},
+		{
+			"ImportPath": "github.com/influxdata/influxdb/client/v2",
+			"Comment": "v1.3.0rc1-51-ge014dd012",
+			"Rev": "e014dd012d9a66cce540f4a021ee0a4a177960a7"
+		},
+		{
+			"ImportPath": "github.com/influxdata/influxdb/models",
+			"Comment": "v1.3.0rc1-51-ge014dd012",
+			"Rev": "e014dd012d9a66cce540f4a021ee0a4a177960a7"
+		},
+		{
+			"ImportPath": "github.com/influxdata/influxdb/pkg/escape",
+			"Comment": "v1.3.0rc1-51-ge014dd012",
+			"Rev": "e014dd012d9a66cce540f4a021ee0a4a177960a7"
+		},
+		{
+			"ImportPath": "github.com/judwhite/go-svc/svc",
+			"Comment": "v1.0.0-6-g52e9762",
+			"Rev": "52e9762f4dcd5373a8ecdefd85ed089cac66afa4"
+		},
+		{
+			"ImportPath": "github.com/nsqio/nsq/internal/test",
+			"Comment": "v1.0.0-compat-27-ge3fcfe5",
+			"Rev": "e3fcfe5360b7813c9ce172571697768e57300788"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/windows",
+			"Rev": "90796e5a05ce440b41c768bd9af257005e470461"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/windows/svc",
+			"Rev": "90796e5a05ce440b41c768bd9af257005e470461"
+		}
+	]
+}

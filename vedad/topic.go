@@ -69,19 +69,15 @@ func (t *Topic) Exit() error {
 
 	t.ctx.vedad.logf(LOG_INFO, "TOPIC(%s): closing", t.name)
 
+	// close all the channels
+	for name, _ := range t.channelMap {
+		close(t.channelMap[name].exitChan)
+	}
+
 	close(t.exitChan)
 
 	// synchronize the close of messagePump()
 	t.waitGroup.Wait()
-
-	// close all the channels
-	for _, channel := range t.channelMap {
-		err := channel.Close()
-		if err != nil {
-			// we need to continue regardless of error to close all the channels
-			t.ctx.vedad.logf(LOG_ERROR, "channel(%s) close - %s", channel.name, err)
-		}
-	}
 
 	// write anything leftover to disk
 	return nil

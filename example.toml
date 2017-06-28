@@ -12,10 +12,10 @@
 	address = "10.1.1.95:11211"
 	interval = 3
 
-	#[topics.redis.session-75-0]
-	#address = "10.1.1.75:6380"
-	#interval = 3
+	[topics.redis.session-75-0]
+	address = "10.1.1.75:6380"
+	interval = 3
   
-	#[topics.redis.session-75-1]
-	#address = "10.1.1.75:6381"
-	#interval = 3
+	[topics.redis.session-75-1]
+	address = "10.1.1.75:6381"
+	interval = 3

@@ -60,6 +60,9 @@ func (v *VEDAD) Main() {
 
 func (v *VEDAD) Exit() {
 	v.logf(LOG_INFO, "VEDAD: closing topics")
+	for _, vv := range v.topicMap {
+		vv.Exit()
+	}
 	close(v.exitChan)
 	v.waitGroup.Wait()
 }
@@ -130,13 +133,18 @@ func (v *VEDAD) ToInfluxdb() {
 		case c := <-v.pushinfluxChan:
 			err := putdata(*c)
 			if err != nil {
-				//v.pushinfluxChan <- c
+				v.pushinfluxChan <- c
 				v.logf(LOG_ERROR, "VEDAD: fail to write data into influxdb : %s", err.Error())
+				continue
 			}
+			v.logf(LOG_DEBUG, "VEDAD: succeed to write data into influxdb")
+			continue
 		case <-v.exitChan:
-			return
+			goto exit
 		}
 	}
+exit:
+	return
 }
 
 func putdata(data collectors.CollectData) error {

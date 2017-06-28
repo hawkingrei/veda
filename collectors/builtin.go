@@ -13,4 +13,5 @@ type CollectData struct {
 
 type Collectd interface {
 	Start() (CollectData, error)
+	convertCollectData(string) CollectData
 }
