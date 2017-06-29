@@ -70,7 +70,7 @@ func (t *Topic) Exit() error {
 	t.ctx.vedad.logf(LOG_INFO, "TOPIC(%s): closing", t.name)
 
 	// close all the channels
-	for name, _ := range t.channelMap {
+	for name := range t.channelMap {
 		close(t.channelMap[name].exitChan)
 	}
 
