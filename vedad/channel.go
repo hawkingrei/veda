@@ -46,6 +46,18 @@ func (c *Channel) getconn() (mc collectors.Collectd, err error) {
 	case "redis":
 		c.ctx.vedad.logf(LOG_INFO, "work(%s,%s): start", "redis", c.name)
 		mc, err = collectors.GetRedisConn(c.meta.Address, c.name)
+	case "zookeeper":
+		c.ctx.vedad.logf(LOG_INFO, "work(%s,%s): start", "zookeeper", c.name)
+		mc, err = collectors.GetZookeeperConn(c.meta.Address, c.name)
+	case "beansdb":
+		c.ctx.vedad.logf(LOG_INFO, "work(%s,%s): start", "beansdb", c.name)
+		mc, err = collectors.GetBeansdbConn(c.meta.Address, c.name)
+	case "nginx":
+		c.ctx.vedad.logf(LOG_INFO, "work(%s,%s): start", "nginx", c.name)
+		mc, err = collectors.GetBeansdbConn(c.meta.Address, c.name)
+	case "twemproxy":
+		c.ctx.vedad.logf(LOG_INFO, "work(%s,%s): start", "twemproxy", c.name)
+		mc, err = collectors.GetTwemproxyConn(c.meta.Address, c.name)
 	}
 	return mc, err
 }

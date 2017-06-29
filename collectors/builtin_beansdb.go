@@ -9,57 +9,46 @@ import (
 	"time"
 )
 
-type MemcacheConnection struct {
+type BeansdbConnection struct {
 	conn     net.Conn
 	buffered bufio.ReadWriter
 	Name     string
 	tag      map[string]string
 }
 
-var _ Collectd = &MemcacheConnection{}
-
 var (
-	memcacheWhitelist = []string{
+	BeansdbWhitelist = []string{
 		"uptime",
 		"time",
 		"pointer_size",
 		"rusage_user",
 		"rusage_system",
+		"rusage_minflt",
+		"rusage_majflt",
+		"rusage_nswap",
+		"rusage_inblock",
+		"rusage_oublock",
+		"rusage_nvcsw",
+		"rusage_nivcsw",
+		"item_buf_size",
 		"curr_connections",
 		"total_connections",
 		"connection_structures",
 		"cmd_get",
 		"cmd_set",
-		"cmd_flush",
+		"cmd_delete",
+		"slow_cmd",
 		"get_hits",
 		"get_misses",
-		"delete_misses",
-		"delete_hits",
-		"incr_misses",
-		"incr_hits",
-		"decr_misses",
-		"decr_hits",
-		"cas_misses",
-		"cas_hits",
-		"cas_badval",
-		"auth_cmds",
-		"auth_errors",
-		"bytes_read",
-		"bytes_written",
-		"limit_maxbytes",
-		"accepting_conns",
-		"listen_disabled_num",
-		"threads",
-		"conn_yields",
-		"bytes",
 		"curr_items",
 		"total_items",
-		"evictions",
-		"reclaimed",
+		"bytes_read",
+		"bytes_written",
+		"threads",
 	}
 )
 
-func GetMemcacheConn(address string, name string) (conn *MemcacheConnection, err error) {
+func GetBeansdbConn(address string, name string) (conn *BeansdbConnection, err error) {
 	var tag map[string]string
 	tag = make(map[string]string)
 	tag["name"] = name
@@ -67,37 +56,37 @@ func GetMemcacheConn(address string, name string) (conn *MemcacheConnection, err
 	if err != nil {
 		return conn, err
 	}
-	return &MemcacheConnection{
+	return &BeansdbConnection{
 		conn: nc,
 		buffered: bufio.ReadWriter{
 			Reader: bufio.NewReader(nc),
 			Writer: bufio.NewWriter(nc),
 		},
-		Name: "memcache",
+		Name: "Beansdb",
 		tag:  tag,
 	}, err
 }
 
-func (mc *MemcacheConnection) writestring(s string) (err error) {
-	_, err = mc.buffered.WriteString(s)
+func (bc *BeansdbConnection) writestring(s string) (err error) {
+	_, err = bc.buffered.WriteString(s)
 	return
 }
 
-func (mc *MemcacheConnection) flush() (err error) {
-	return mc.buffered.Flush()
+func (bc *BeansdbConnection) flush() (err error) {
+	return bc.buffered.Flush()
 }
 
-func (mc *MemcacheConnection) readline() string {
-	mc.flush()
-	l, _, _ := mc.buffered.ReadLine()
+func (bc *BeansdbConnection) readline() string {
+	bc.flush()
+	l, _, _ := bc.buffered.ReadLine()
 	return string(l)
 }
 
-func (mc *MemcacheConnection) stats() (result []byte, err error) {
-	mc.writestring("stats\r\n")
-	mc.flush()
+func (bc *BeansdbConnection) stats() (result []byte, err error) {
+	bc.writestring("stats\r\n")
+	bc.flush()
 	for {
-		l := mc.readline()
+		l := bc.readline()
 		if strings.HasPrefix(l, "END") {
 			break
 		}
@@ -110,10 +99,10 @@ func (mc *MemcacheConnection) stats() (result []byte, err error) {
 	return result, err
 }
 
-func (mc *MemcacheConnection) convertCollectData(data string) (cd CollectData) {
+func (bc *BeansdbConnection) convertCollectData(data string) (cd CollectData) {
 	cd.T = time.Now()
-	cd.Name = mc.Name
-	cd.Tags = mc.tag
+	cd.Name = bc.Name
+	cd.Tags = bc.tag
 	cd.Data = make(map[string]interface{})
 	resultStr := strings.Split(data, "\n")
 	for _, result := range resultStr {
@@ -126,7 +115,7 @@ func (mc *MemcacheConnection) convertCollectData(data string) (cd CollectData) {
 			continue
 			// TODO: add log
 		}
-		for _, v := range memcacheWhitelist {
+		for _, v := range BeansdbWhitelist {
 			if v == item[1] {
 				// Found!
 				cd.Data[item[1]] = itemValue
@@ -138,11 +127,11 @@ func (mc *MemcacheConnection) convertCollectData(data string) (cd CollectData) {
 	return
 }
 
-// Start a Memcache Connection.
-func (mc *MemcacheConnection) Start() (data CollectData, err error) {
-	result, err := mc.stats()
+// Start a Beansdb Connection.
+func (bc *BeansdbConnection) Start() (data CollectData, err error) {
+	result, err := bc.stats()
 	if err != nil {
 		return data, err
 	}
-	return mc.convertCollectData(string(result)), err
+	return bc.convertCollectData(string(result)), err
 }

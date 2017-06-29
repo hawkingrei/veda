@@ -2,15 +2,14 @@ package collectors
 
 import (
 	"bufio"
-	"errors"
+	"encoding/json"
+	"io/ioutil"
 	"net"
-	"strconv"
-	"strings"
 	"time"
 )
 
 type TwemproxyConnection struct {
-	conn     net.Conn
+	conn     string
 	buffered bufio.ReadWriter
 	Name     string
 	tag      map[string]string
@@ -19,7 +18,7 @@ type TwemproxyConnection struct {
 var _ Collectd = &TwemproxyConnection{}
 
 var (
-	memcacheWhitelist = []string{
+	twemproxyWhitelist = []string{
 		"uptime",
 		"time",
 		"pointer_size",
@@ -60,82 +59,61 @@ var (
 	}
 )
 
-func GetTwemproxyConn(address string, name string) (conn *MemcacheConnection, err error) {
+type Session struct {
+	Client_eof         float64 `json:"client_eof"`
+	Client_err         float64 `json:"client_eff"`
+	Client_connections float64 `json:"client_connections"`
+	Server_ejects      float64 `json:"server_ejects"`
+	Forward_error      float64 `json:"forward_error"`
+	Fragments          float64 `json:"fragments"`
+}
+
+type twemproxyJson struct {
+	Uptime  float64 `json:"uptime"`
+	Session Session `json:"session"`
+}
+
+func GetTwemproxyConn(address string, name string) (conn *TwemproxyConnection, err error) {
 	var tag map[string]string
 	tag = make(map[string]string)
 	tag["name"] = name
-	nc, err := net.DialTimeout("tcp", address, 2*time.Second)
-	if err != nil {
-		return conn, err
-	}
-	return &MemcacheConnection{
-		conn: nc,
-		buffered: bufio.ReadWriter{
-			Reader: bufio.NewReader(nc),
-			Writer: bufio.NewWriter(nc),
-		},
+
+	return &TwemproxyConnection{
+		conn: address,
+		//buffered: bufio.ReadWriter{
+		//	Reader: bufio.NewReader(nc),
+		//	Writer: bufio.NewWriter(nc),
+		//},
 		Name: "memcache",
 		tag:  tag,
 	}, err
 }
 
-func (mc *TwemproxyConnection) writestring(s string) (err error) {
-	_, err = mc.buffered.WriteString(s)
-	return
-}
-
-func (mc *TwemproxyConnection) flush() (err error) {
-	return mc.buffered.Flush()
-}
-
-func (mc *TwemproxyConnection) readline() string {
-	mc.flush()
-	l, _, _ := mc.buffered.ReadLine()
-	return string(l)
-}
-
 func (mc *TwemproxyConnection) stats() (result []byte, err error) {
-	mc.writestring("stats\r\n")
-	mc.flush()
-	for {
-		l := mc.readline()
-		if strings.HasPrefix(l, "END") {
-			break
-		}
-		if strings.Contains(l, "ERROR") {
-			return result, errors.New("GET ERROR WHEN GETTING STATS")
-		}
-		result = append(result, l...)
-		result = append(result, '\n')
+	conn, err := net.DialTimeout("tcp", mc.conn, 2*time.Second)
+	if err != nil {
+		return
 	}
-	return result, err
+	defer conn.Close()
+	return ioutil.ReadAll(conn)
 }
 
-func (mc *TwemproxyConnection) convertCollectData(data string) (cd CollectData) {
+func (mc *TwemproxyConnection) convertCollectData(data []byte) (cd CollectData) {
 	cd.T = time.Now()
 	cd.Name = mc.Name
 	cd.Tags = mc.tag
 	cd.Data = make(map[string]interface{})
-	resultStr := strings.Split(data, "\n")
-	for _, result := range resultStr {
-		if result == "" {
-			break
-		}
-		item := strings.Split(result, " ")
-		itemValue, err := strconv.ParseFloat(item[2], 64)
-		if err != nil {
-			continue
-			// TODO: add log
-		}
-		for _, v := range memcacheWhitelist {
-			if v == item[1] {
-				// Found!
-				cd.Data[item[1]] = itemValue
-				break
-			}
-		}
-	}
-	//fmt.Println(cd)
+	var da twemproxyJson
+	json.Unmarshal(data, &da)
+	//fmt.Println(da)
+	cd.Data["uptime"] = da.Uptime
+	cd.Data["client_connections"] = da.Session.Client_connections
+	cd.Data["client_eof"] = da.Session.Client_eof
+	cd.Data["client_err"] = da.Session.Client_err
+	cd.Data["client_connections"] = da.Session.Client_connections
+	cd.Data["server_ejects"] = da.Session.Server_ejects
+	cd.Data["forward_error"] = da.Session.Forward_error
+	cd.Data["fragments"] = da.Session.Fragments
 	return
 }
 
@@ -145,5 +123,6 @@ func (mc *TwemproxyConnection) Start() (data CollectData, err error) {
 	if err != nil {
 		return data, err
 	}
-	return mc.convertCollectData(string(result)), err
+	//fmt.Println(string(result))
+	return mc.convertCollectData(result), err
 }
