@@ -72,16 +72,18 @@ func (c *Channel) StartChannel() {
 		c.Close()
 		return
 	}
+	//c.ctx.vedad.logf(LOG_DEBUG, "work(%s,%s): create to collect data", c.meta.Address, c.name)
 	ticker := time.NewTicker(time.Duration(c.meta.Interval) * time.Second)
 	for {
 		select {
 		case <-ticker.C:
 			data, err := mc.Start()
-			c.ctx.vedad.logf(LOG_INFO, "work(%s,%s): start to collect data", c.meta.Address, c.name)
+			//c.ctx.vedad.logf(LOG_DEBUG, "work(%s,%s): start to collect data", c.meta.Address, c.name)
 			if err != nil {
 				c.ctx.vedad.logf(LOG_ERROR, "work(%s,%s): fail to collect data : %s", c.meta.Address, c.name, err.Error())
 			}
 			c.ctx.vedad.pushinfluxChan <- &data
+			continue
 		case <-c.exitChan:
 			goto exit
 		}

@@ -7,6 +7,8 @@ import (
 	"sync"
 	"sync/atomic"
 
+	_ "net/http/pprof"
+
 	goutil "github.com/hawkingrei/golang_util"
 	"github.com/hawkingrei/veda/collectors"
 	"github.com/influxdata/influxdb/client/v2"
@@ -52,6 +54,7 @@ func (v *VEDAD) Loadmeta(meta Meta) error {
 }
 func (v *VEDAD) Main() {
 	v.waitGroup.Wrap(func() { v.ToInfluxdb() })
+	//v.waitGroup.Wrap(func() { http.ListenAndServe("localhost:6060", nil) })
 	//v.waitGroup.Wrap(func() { v.lookupLoop() })
 	//if v.getOpts().StatsdAddress != "" {
 	//	v.waitGroup.Wrap(func() { v.statsdLoop() })
@@ -135,15 +138,15 @@ func (v *VEDAD) ToInfluxdb() {
 			if err != nil {
 				v.pushinfluxChan <- c
 				v.logf(LOG_ERROR, "VEDAD: fail to write data into influxdb : %s", err.Error())
-				continue
+
 			}
 			v.logf(LOG_DEBUG, "VEDAD: succeed to write data into influxdb")
-			continue
 		case <-v.exitChan:
 			goto exit
 		}
 	}
 exit:
+	v.logf(LOG_DEBUG, "VEDAD: ToInfluxdb exit")
 	return
 }
 
