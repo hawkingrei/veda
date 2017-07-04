@@ -151,7 +151,7 @@ func (v *VEDAD) ToInfluxdb() {
 				//v.pushinfluxChan <- c
 				v.logf(LOG_ERROR, "VEDAD: fail to write data into influxdb : %s", err.Error())
 			} else {
-				v.logf(LOG_DEBUG, "VEDAD: succeed to write data into influxdb")
+				//v.logf(LOG_DEBUG, "VEDAD: succeed to write data into influxdb")
 			}
 
 		case <-v.exitChan:
