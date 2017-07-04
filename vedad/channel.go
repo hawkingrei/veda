@@ -58,6 +58,9 @@ func (c *Channel) getconn() (mc collectors.Collectd, err error) {
 	case "twemproxy":
 		c.ctx.vedad.logf(LOG_INFO, "work(%s,%s): start", "twemproxy", c.name)
 		mc, err = collectors.GetTwemproxyConn(c.meta.Address, c.name)
+	case "mysql":
+		c.ctx.vedad.logf(LOG_INFO, "work(%s,%s): start", "mysql", c.name)
+		mc, err = collectors.GetMysqlConn(c.meta.Address, c.meta.Username, c.meta.Password, c.meta.Db, c.name)
 	}
 	return mc, err
 }

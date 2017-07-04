@@ -15,6 +15,9 @@ type ChannelsMeta struct {
 	Name     string
 	Address  string
 	Interval int
+	Username string
+	Password string
+	Db       string
 }
 
 type Options struct {
