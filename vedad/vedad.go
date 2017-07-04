@@ -7,11 +7,11 @@ import (
 	"sync"
 	"sync/atomic"
 
-	_ "net/http/pprof"
+	//_ "net/http/pprof"
 
 	goutil "github.com/hawkingrei/golang_util"
 	"github.com/hawkingrei/veda/collectors"
-	"github.com/influxdata/influxdb/client/v2"
+	client "github.com/influxdata/influxdb/client/v2"
 )
 
 type VEDAD struct {
@@ -21,19 +21,31 @@ type VEDAD struct {
 	exitChan       chan int
 	pushinfluxChan chan *collectors.CollectData
 	topicMap       map[string]*Topic
+	c              client.Client
 }
 
-func New(opts *Options) *VEDAD {
+func New(opts *Options) (v *VEDAD, err error) {
 	if opts.Logger == nil {
 		opts.Logger = log.New(os.Stderr, opts.LogPrefix, log.Ldate|log.Ltime|log.Lmicroseconds)
 	}
-	v := &VEDAD{
+	username := ""
+	password := ""
+	c, err := client.NewHTTPClient(client.HTTPConfig{
+		Addr:     "http://10.1.1.89:8086",
+		Username: username,
+		Password: password,
+	})
+	if err != nil {
+		return v, err
+	}
+	v = &VEDAD{
+		c:              c,
 		topicMap:       make(map[string]*Topic),
 		exitChan:       make(chan int),
 		pushinfluxChan: make(chan *collectors.CollectData, 100000000),
 	}
 	v.swapOpts(opts)
-	return v
+	return
 }
 
 func (v *VEDAD) getOpts() *Options {
@@ -134,35 +146,24 @@ func (v *VEDAD) ToInfluxdb() {
 	for {
 		select {
 		case c := <-v.pushinfluxChan:
-			err := putdata(*c)
+			err := v.putdata(*c)
 			if err != nil {
-				v.pushinfluxChan <- c
+				//v.pushinfluxChan <- c
 				v.logf(LOG_ERROR, "VEDAD: fail to write data into influxdb : %s", err.Error())
-
+			} else {
+				v.logf(LOG_DEBUG, "VEDAD: succeed to write data into influxdb")
 			}
-			v.logf(LOG_DEBUG, "VEDAD: succeed to write data into influxdb")
+
 		case <-v.exitChan:
 			goto exit
 		}
 	}
 exit:
 	v.logf(LOG_DEBUG, "VEDAD: ToInfluxdb exit")
-	return
 }
 
-func putdata(data collectors.CollectData) error {
+func (v *VEDAD) putdata(data collectors.CollectData) error {
 	MyDB := "square_holes"
-	username := ""
-	password := ""
-	c, err := client.NewHTTPClient(client.HTTPConfig{
-		Addr:     "http://10.1.1.89:8086",
-		Username: username,
-		Password: password,
-	})
-	if err != nil {
-		return err
-	}
-
 	// Create a new point batch
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  MyDB,
@@ -180,7 +181,7 @@ func putdata(data collectors.CollectData) error {
 	bp.AddPoint(pt)
 
 	// Write the batch
-	if err := c.Write(bp); err != nil {
+	if err := v.c.Write(bp); err != nil {
 		return err
 	}
 	return nil

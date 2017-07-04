@@ -60,7 +60,11 @@ func (p *program) Start() error {
 		os.Exit(0)
 	}
 
-	vedad := vedad.New(opts)
+	vedad, err := vedad.New(opts)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(0)
+	}
 	configFile := flagSet.Lookup("config").Value.String()
 	meta, err := loadmeta(configFile)
 	if err != nil {
