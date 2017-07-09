@@ -11,6 +11,7 @@ import (
 
 	goutil "github.com/hawkingrei/golang_util"
 	"github.com/hawkingrei/veda/collectors"
+	"github.com/hawkingrei/veda/internal/lg"
 	client "github.com/influxdata/influxdb/client/v2"
 )
 
@@ -43,6 +44,11 @@ func New(opts *Options) (v *VEDAD, err error) {
 		topicMap:       make(map[string]*Topic),
 		exitChan:       make(chan int),
 		pushinfluxChan: make(chan *collectors.CollectData, 100000000),
+	}
+	opts.logLevel, err = lg.ParseLogLevel(opts.LogLevel, opts.Verbose)
+	if err != nil {
+		v.logf(LOG_FATAL, "%s", err)
+		os.Exit(1)
 	}
 	v.swapOpts(opts)
 	return
