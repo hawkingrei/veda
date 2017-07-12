@@ -44,6 +44,7 @@ var (
 		"aof_rewrite_scheduled",
 		"aof_last_rewrite_time_sec",
 		"aof_current_rewrite_time_sec",
+		"aof_current_size",
 		"total_connections_received",
 		"total_commands_processed",
 		"instantaneous_ops_per_sec",
