@@ -36,7 +36,12 @@ func GetMysqlConn(address string, username string, password string, dbname strin
 	tag = make(map[string]string)
 	tag["name"] = name
 	dsn := username + ":" + password + "@tcp(" + address + ")/" + dbname
+	DB, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return conn, err
+	}
 	return &MysqlConnection{
+		DB:   DB,
 		dsn:  dsn,
 		Name: "mysql",
 		tag:  tag,
@@ -45,10 +50,6 @@ func GetMysqlConn(address string, username string, password string, dbname strin
 
 func (mc *MysqlConnection) loadStatus( /*db *sql.DB*/ ) (data map[string]string, err error) {
 	// Returns the global status, also for versions previous 5.0.2
-	mc.DB, err = sql.Open("mysql", mc.dsn)
-	if err != nil {
-		return data, err
-	}
 	rows, err := mc.DB.Query("SHOW /*!50002 GLOBAL */ STATUS;")
 	if err != nil {
 		return data, err
