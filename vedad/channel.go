@@ -95,6 +95,7 @@ exit:
 }
 
 func (c *Channel) Close() error {
+	c.ctx.vedad.logf(LOG_INFO, "CHANNEL(%s): closing", c.name)
 	close(c.exitChan)
 	return nil
 }
