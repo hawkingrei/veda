@@ -54,7 +54,7 @@ func (c *Channel) getconn() (mc collectors.Collectd, err error) {
 		mc, err = collectors.GetBeansdbConn(c.meta.Address, c.name)
 	case "nginx":
 		c.ctx.vedad.logf(LOG_INFO, "work(%s,%s): start", "nginx", c.name)
-		mc, err = collectors.GetBeansdbConn(c.meta.Address, c.name)
+		mc, err = collectors.GetNginxConn(c.meta.Address, c.name)
 	case "twemproxy":
 		c.ctx.vedad.logf(LOG_INFO, "work(%s,%s): start", "twemproxy", c.name)
 		mc, err = collectors.GetTwemproxyConn(c.meta.Address, c.name)
