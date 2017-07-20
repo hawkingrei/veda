@@ -81,6 +81,7 @@ func (c *Channel) StartChannel() {
 			//c.ctx.vedad.logf(LOG_DEBUG, "work(%s,%s): start to collect data", c.meta.Address, c.name)
 			if err != nil {
 				c.ctx.vedad.logf(LOG_ERROR, "work(%s,%s): fail to collect data : %s", c.meta.Address, c.name, err.Error())
+				continue
 			}
 			c.ctx.vedad.pushinfluxChan <- &data
 			continue
