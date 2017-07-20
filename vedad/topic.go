@@ -71,7 +71,7 @@ func (t *Topic) Exit() error {
 
 	// close all the channels
 	for name := range t.channelMap {
-		close(t.channelMap[name].exitChan)
+		t.channelMap[name].Close()
 	}
 
 	close(t.exitChan)
