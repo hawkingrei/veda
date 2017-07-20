@@ -155,7 +155,7 @@ func (v *VEDAD) ToInfluxdb() {
 			err := v.putdata(*c)
 			if err != nil {
 				//v.pushinfluxChan <- c
-				v.logf(LOG_ERROR, "VEDAD: fail to write data into influxdb : %s", err.Error())
+				v.logf(LOG_ERROR, "VEDAD:(%s %s) fail to write data into influxdb : %s", c.Name, c.Tags, err.Error())
 			} else {
 				//v.logf(LOG_DEBUG, "VEDAD: succeed to write data into influxdb")
 			}
