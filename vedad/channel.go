@@ -69,6 +69,7 @@ func (c *Channel) StartChannel() {
 	var mc collectors.Collectd
 	mc, err := c.getconn()
 	if err != nil {
+		c.ctx.vedad.logf(LOG_ERROR, "work(%s): fail to get connect : %s", c.name, err.Error())
 		c.Close()
 		return
 	}
