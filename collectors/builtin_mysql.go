@@ -2,6 +2,7 @@ package collectors
 
 import (
 	"database/sql"
+	"strconv"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -83,7 +84,10 @@ func (mc *MysqlConnection) convertCollectData(info map[string]string) (values Co
 	values.Tags = mc.tag
 	values.Data = make(map[string]interface{})
 	for k, v := range info {
-		values.Data[k] = v
+		value, err := strconv.ParseInt(v, 10, 64)
+		if err == nil {
+			values.Data[k] = value
+		}
 	}
 	return
 }
