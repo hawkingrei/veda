@@ -9,10 +9,12 @@ import (
 
 	//_ "net/http/pprof"
 
+	"github.com/gin-gonic/gin"
 	goutil "github.com/hawkingrei/golang_util"
 	"github.com/hawkingrei/veda/collectors"
 	"github.com/hawkingrei/veda/internal/lg"
 	client "github.com/influxdata/influxdb/client/v2"
+	"github.com/mkevac/debugcharts"
 )
 
 type VEDAD struct {
@@ -72,6 +74,9 @@ func (v *VEDAD) Loadmeta(meta Meta) error {
 }
 func (v *VEDAD) Main() {
 	v.waitGroup.Wrap(func() { v.ToInfluxdb() })
+	router := gin.Default()
+	debugcharts.GinDebugRouter(router)
+	router.Run(":8080")
 	//v.waitGroup.Wrap(func() { http.ListenAndServe("localhost:6060", nil) })
 	//v.waitGroup.Wrap(func() { v.lookupLoop() })
 	//if v.getOpts().StatsdAddress != "" {
