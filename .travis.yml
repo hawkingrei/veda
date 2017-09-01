@@ -1,0 +1,14 @@
+language: go
+go:
+  - 1.8.x
+  - master
+sudo: required
+install:
+  - export PATH=$PATH:$HOME/gopath/bin
+  - go env
+  - go get github.com/mattn/goveralls
+  - go get github.com/tools/godep
+
+script:
+  - godep restore
+  - make
