@@ -20,18 +20,20 @@ type Topic struct {
 
 	exitChan chan int
 
-	channelMap map[string]*Channel
-	taskMap    map[string]ChannelsMeta
-	ctx        *context
+	channelMap      map[string]*Channel
+	KafkaChannelMap map[string]*KafkaChannel
+	taskMap         map[string]ChannelsMeta
+	ctx             *context
 }
 
 // Topic constructor
 func NewTopic(topicName string, ctx *context) *Topic {
 	t := &Topic{
-		name:       topicName,
-		channelMap: make(map[string]*Channel),
-		exitChan:   make(chan int),
-		ctx:        ctx,
+		name:            topicName,
+		channelMap:      make(map[string]*Channel),
+		KafkaChannelMap: make(map[string]*KafkaChannel),
+		exitChan:        make(chan int),
+		ctx:             ctx,
 	}
 
 	return t
@@ -50,13 +52,23 @@ func (t *Topic) Exiting() bool {
 }
 
 // this expects the caller to handle locking
-func (t *Topic) GetChannel(channelName string, channelsMeta ChannelsMeta) *Channel {
+func (t *Topic) GetChannel(channelName string, channelsMeta ChannelsMeta) (channel *Channel) {
 	channel, ok := t.channelMap[channelName]
 	if !ok {
 		channel = NewChannel(t.name, channelName, channelsMeta, t.ctx)
 		t.channelMap[channelName] = channel
 		t.ctx.vedad.logf(LOG_INFO, "TOPIC(%s): new channel(%s)", t.name, channel.name)
-		//t.ctx.vedad.waitGroup(func() {})
+		return channel
+	}
+	return channel
+}
+
+func (t *Topic) GetKafkaChannel(channelName string, channelsMeta ChannelsMeta) (channel *KafkaChannel) {
+	channel, ok := t.KafkaChannelMap[channelName]
+	if !ok {
+		channel = NewKafkaChannel(t.name, channelName, channelsMeta, t.ctx)
+		t.KafkaChannelMap[channelName] = channel
+		t.ctx.vedad.logf(LOG_INFO, "TOPIC(%s): new channel(%s)", t.name, channel.name)
 		return channel
 	}
 	return channel
@@ -73,7 +85,9 @@ func (t *Topic) Exit() error {
 	for name := range t.channelMap {
 		t.channelMap[name].Close()
 	}
-
+	for name := range t.KafkaChannelMap {
+		t.KafkaChannelMap[name].Close()
+	}
 	close(t.exitChan)
 
 	// synchronize the close of messagePump()

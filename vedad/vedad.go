@@ -66,8 +66,14 @@ func (v *VEDAD) swapOpts(opts *Options) {
 func (v *VEDAD) Loadmeta(meta Meta) error {
 	for topicName, services := range meta.Topics {
 		topic := v.GetTopic(topicName)
-		for servername, service := range services {
-			topic.GetChannel(servername, service)
+		if topicName == "app" {
+			for servername, service := range services {
+				topic.GetKafkaChannel(servername, service)
+			}
+		} else {
+			for servername, service := range services {
+				topic.GetChannel(servername, service)
+			}
 		}
 	}
 	return nil

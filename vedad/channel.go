@@ -1,6 +1,7 @@
 package vedad
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -27,6 +28,7 @@ type Channel struct {
 }
 
 func NewChannel(topicName string, channelName string, channelsMeta ChannelsMeta, ctx *context) *Channel {
+	fmt.Println("fuck your newchannel")
 	c := &Channel{
 		exitChan:  make(chan int),
 		topicName: topicName,

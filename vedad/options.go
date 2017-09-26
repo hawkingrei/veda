@@ -12,12 +12,13 @@ type Meta struct {
 type Channels map[string]ChannelsMeta
 
 type ChannelsMeta struct {
-	Name     string
-	Address  string
-	Interval int
-	Username string
-	Password string
-	Db       string
+	Name      string
+	Address   string
+	Addresses []string
+	Interval  int
+	Username  string
+	Password  string
+	Db        string
 }
 
 type Options struct {
