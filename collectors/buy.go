@@ -593,12 +593,6 @@ func (s *Buy) toCollectData(dataChan *chan *CollectData) {
 	data.Data["WishListAPIMeanRate"] = float64(s.Metrics.Meters.WishListAPI.MeanRate)
 	data.Data["WishListAPIErrMeanRate"] = float64(s.Metrics.Meters.WishListAPIErr.MeanRate)
 
-	data.Data["AddCartAPITimer"] = float64(s.Metrics.Timers.AddCartAPITimer)
-	data.Data["ComDuitangBuyViewNapiPayPayAPIAlipayTimer"] = float64(s.Metrics.Timers.ComDuitangBuyViewNapiPayPayAPIAlipayTimer)
-	data.Data["CreateOrderAPITimer"] = float64(s.Metrics.Timers.CreateOrderAPITimer)
-	data.Data["OrderListAPITimer"] = float64(s.Metrics.Timers.OrderListAPITimer)
-	data.Data["WishListAPITimer"] = float64(s.Metrics.Timers.WishListAPITimer)
-
 	data.Data["AddCartAPITimerCount"] = float64(s.Metrics.Timers.AddCartAPITimer.Count)
 	data.Data["ComDuitangBuyViewNapiPayPayAPIAlipayTimerCount"] = float64(s.Metrics.Timers.ComDuitangBuyViewNapiPayPayAPIAlipayTimer.Count)
 	data.Data["CreateOrderAPITimerCount"] = float64(s.Metrics.Timers.CreateOrderAPITimer.Count)
